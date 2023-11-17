@@ -35,8 +35,8 @@ public class JobConfig
 
 
 
-    @Bean
-    public Job job(JobRepository jobRepository,JobExecutionListener jobExecutionListener, Step step)
+    @Bean(name = "job1")
+    public Job job1(JobRepository jobRepository,@Qualifier("listener1") JobExecutionListener jobExecutionListener, @Qualifier(value = "step1") Step step)
     {
         return new JobBuilder("job1",jobRepository)
                 .listener(jobExecutionListener)
@@ -44,19 +44,22 @@ public class JobConfig
                 .build();
     }
 
-    @Bean
+    @Bean(name = "listener1")
     public JobExecutionListener jobExecutionListener()
     {
         return new ConfigExecutionBuilder();
     }
 
-    @Bean
-    public Step step(JobRepository jobRepository,
+    @Bean(name = "step1")
+    public Step step1(JobRepository jobRepository,
                      PlatformTransactionManager transactionManager,
                      TaskExecutor taskExecutor,
+                     @Qualifier("reader1")
                      ItemReader<CustomerEntity> itemReader,
-                     ItemProcessor<CustomerEntity,CustomerEntity> itemProcessor,
-                     ItemWriter<CustomerEntity> itemWriter)
+                     @Qualifier("process1")
+                         ItemProcessor<CustomerEntity,CustomerEntity> itemProcessor,
+                     @Qualifier("writer1")
+                         ItemWriter<CustomerEntity> itemWriter)
     {
 
         return new StepBuilder("step1",jobRepository)
@@ -69,14 +72,14 @@ public class JobConfig
     }
 
     @Bean
-    public TaskExecutor taskExecutor()
+    public TaskExecutor taskExecutor1()
     {
         SimpleAsyncTaskExecutor simpleAsyncTaskExecutor= new SimpleAsyncTaskExecutor();
         simpleAsyncTaskExecutor.setConcurrencyLimit(10);
         return simpleAsyncTaskExecutor;
     }
-    @Bean
-    public ItemReader<CustomerEntity> flatFileItemReader()
+    @Bean(name = "reader1")
+    public ItemReader<CustomerEntity> flatFileItemReader1()
   {
       return new FlatFileItemReaderBuilder<CustomerEntity>()
               .name("reader1")
@@ -89,14 +92,14 @@ public class JobConfig
 
   }
 
-  @Bean
-  public ItemProcessor<CustomerEntity,CustomerEntity> itemProcessor()
+  @Bean(name = "process1")
+  public ItemProcessor<CustomerEntity,CustomerEntity> itemProcessor1()
   {
       return new CustomItemProcess();
   }
 
-  @Bean
-  public ItemWriter<CustomerEntity> itemWriter(CustomerDao customerDao)
+  @Bean(name = "writer1")
+  public ItemWriter<CustomerEntity> itemWriter1(CustomerDao customerDao)
   {
       return new RepositoryItemWriterBuilder<CustomerEntity>()
               .repository(customerDao)
